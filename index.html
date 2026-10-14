@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⚽ Emoji Head Soccer 1v1</title>
+  <meta name="description" content="1v1 Emoji Head Soccer! Jump and head the ball, toggle Light mode for higher jumps and sprint speed vs heavy defense!">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-container">
+    <header class="game-header">
+      <div class="title-wrap">
+        <h1>⚽ EMOJI HEAD SOCCER 1v1</h1>
+        <p class="subtitle">1v1 aerial duel! Jump, header the ball into the net, and tune your weight & defending stats!</p>
+      </div>
+      
+      <div class="scoreboard">
+        <div class="team-score team-blue">
+          <span class="team-tag">YOU (BLUE)</span>
+          <span id="score-player" class="score-num">0</span>
+        </div>
+        <div class="match-time-container">
+          <div class="time-picker-wrap">
+            <span class="picker-label-small">⏱️ MATCH LENGTH:</span>
+            <div class="time-btn-group" id="time-btn-group">
+              <button class="time-btn" data-time="30">30s</button>
+              <button class="time-btn" data-time="60">60s</button>
+              <button class="time-btn active" data-time="90">90s</button>
+              <button class="time-btn" data-time="120">2m</button>
+              <button class="time-btn" data-time="180">3m</button>
+            </div>
+          </div>
+          <span id="match-timer" class="match-time">01:30</span>
+          <button id="btn-restart" class="action-btn" title="Restart Match">🔄 Reset Match</button>
+        </div>
+        <div class="team-score team-red">
+          <span class="team-tag">CPU (RED)</span>
+          <span id="score-cpu" class="score-num">0</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="game-layout">
+      <!-- Soccer Pitch -->
+      <section class="pitch-card">
+        <div class="pitch-header">
+          <div class="controls-hint">
+            <span>🎮 <strong>A / D or ← / →</strong> to Run</span>
+            <span>🚀 <strong>W / ↑ / Spacebar</strong> to JUMP & HEAD the ball!</span>
+            <span>📱 Or <strong>Click / Tap</strong> left/right sides to run & jump</span>
+          </div>
+          <div id="game-status-badge" class="badge live">🟢 1v1 DUEL LIVE</div>
+        </div>
+
+        <div id="pitch-container" class="pitch-container">
+          <canvas id="gameCanvas" width="860" height="480"></canvas>
+          <div id="goal-banner" class="goal-banner hidden">
+            <h2 id="goal-text">⚽ GOOOAAAL! 🎉</h2>
+          </div>
+          <!-- Game Over Modal -->
+          <div id="game-over-modal" class="game-over-modal hidden">
+            <div class="modal-card">
+              <span class="game-over-badge">⏱️ FULL TIME</span>
+              <h2 id="game-over-title">GAME! YOU WIN! 🏆</h2>
+              <p id="game-over-subtitle">Final Score: 3 - 1</p>
+              <button id="btn-play-again" class="play-again-btn">🔄 Play Again</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Player Customization and Stats Deck -->
+      <section class="panel-card">
+        <div class="panel-header">
+          <h2>⚙️ 1v1 Player Setup & Weight Tuning</h2>
+          <p class="hint">Toggle <strong>"Light"</strong>: Makes you <strong>fast & jump high</strong> ⚡, but your <strong>defense / weight drops</strong> 🛡️!</p>
+        </div>
+
+        <div class="customizer-columns">
+          <!-- Player Customizer Card with 1 to 10 Attribute Sliders -->
+          <div class="player-customizer-card">
+            <div class="card-head">
+              <div class="avatar-selector">
+                <img id="current-player-avatar" class="big-avatar avatar-head-img" src="player.png" alt="Anime Hero" />
+                <div class="character-identity">
+                  <h3>Anime Hero</h3>
+                  <span class="char-role-badge">🔵 YOUR STRIKER (Brown Spiky Hair)</span>
+                </div>
+              </div>
+
+              <!-- Quick Archetype Buttons -->
+              <div class="archetype-presets">
+                <span class="picker-label">Quick Archetypes:</span>
+                <div class="preset-btn-row">
+                  <button id="btn-preset-light" class="archetype-chip">⚡ Feather Swift</button>
+                  <button id="btn-preset-tank" class="archetype-chip">🛡️ Iron Tank</button>
+                  <button id="btn-preset-bouncer" class="archetype-chip">🦘 Sky Bouncer</button>
+                  <button id="btn-preset-balanced" class="archetype-chip">⚖️ Balanced</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 1 to 10 Attribute Pickers -->
+            <div class="attributes-section">
+              <div class="attr-header">
+                <h3>🎛️ Customize Base Attributes (1 to 10):</h3>
+              </div>
+              
+              <div class="attr-grid">
+                <!-- Weight (1 to 10) -->
+                <div class="attr-item">
+                  <div class="attr-top">
+                    <label for="input-weight">⚖️ Weight (Heavy/Light)</label>
+                    <span id="label-weight" class="attr-badge">3</span>
+                  </div>
+                  <input type="range" id="input-weight" min="1" max="10" value="3" class="attr-slider weight-slider" />
+                  <span class="attr-sub">Heavy = slow but rock-solid defense</span>
+                </div>
+
+                <!-- Strength (1 to 10) -->
+                <div class="attr-item">
+                  <div class="attr-top">
+                    <label for="input-strength">💪 Strength</label>
+                    <span id="label-strength" class="attr-badge">6</span>
+                  </div>
+                  <input type="range" id="input-strength" min="1" max="10" value="6" class="attr-slider strength-slider" />
+                  <span class="attr-sub">Strong = hard header drive & push power</span>
+                </div>
+
+                <!-- Swiftness (1 to 10) -->
+                <div class="attr-item">
+                  <div class="attr-top">
+                    <label for="input-swiftness">⚡ Swiftness</label>
+                    <span id="label-swiftness" class="attr-badge">8</span>
+                  </div>
+                  <input type="range" id="input-swiftness" min="1" max="10" value="8" class="attr-slider swift-slider" />
+                  <span class="attr-sub">Low swiftness = ball bounces higher! Swift = low bounce</span>
+                </div>
+
+                <!-- Bounciness (1 to 10) -->
+                <div class="attr-item">
+                  <div class="attr-top">
+                    <label for="input-bounciness">🦘 Bounciness</label>
+                    <span id="label-bounciness" class="attr-badge">7</span>
+                  </div>
+                  <input type="range" id="input-bounciness" min="1" max="10" value="7" class="attr-slider bounce-slider" />
+                  <span class="attr-sub">High = spring trampoline headers & air jumps</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic Calculated In-Game Stats -->
+            <div class="calculated-stats-box">
+              <div class="calc-header">
+                <h4>📊 Calculated In-Game Stats:</h4>
+              </div>
+              <div class="stats-bars">
+                <div class="stat-row">
+                  <span class="stat-name">Speed</span>
+                  <div class="stat-track">
+                    <div id="bar-speed" class="stat-fill speed" style="width: 80%;"></div>
+                  </div>
+                  <span id="val-speed" class="stat-val">8.2</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-name">Defending</span>
+                  <div class="stat-track">
+                    <div id="bar-def" class="stat-fill defense" style="width: 40%;"></div>
+                  </div>
+                  <span id="val-def" class="stat-val">40</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-name">Jump</span>
+                  <div class="stat-track">
+                    <div id="bar-jump" class="stat-fill jump" style="width: 85%;"></div>
+                  </div>
+                  <span id="val-jump" class="stat-val">13.5</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-name">Ball Bounce</span>
+                  <div class="stat-track">
+                    <div id="bar-bounce" class="stat-fill bounce" style="width: 60%;"></div>
+                  </div>
+                  <span id="val-bounce" class="stat-val">High</span>
+                </div>
+              </div>
+            </div>
+            
+            <p class="stat-explanation" id="stat-explanation">
+              <!-- Dynamically generated explanation based on formula -->
+            </p>
+          </div>
+
+          <!-- Enemy / CPU Customizer Card with 1 to 10 Attribute Sliders -->
+          <div class="opponent-card enemy-customizer-card">
+            <div class="card-head">
+              <div class="avatar-selector">
+                <img id="current-cpu-avatar" class="big-avatar enemy-avatar avatar-head-img" src="enemy.png" alt="Anime Rival" />
+                <div class="character-identity">
+                  <h3>Anime Rival</h3>
+                  <span class="char-role-badge cpu-role-badge">🔴 CPU RIVAL (Black Spiky Hair)</span>
+                </div>
+              </div>
+
+              <!-- Enemy Quick Archetype Buttons -->
+              <div class="archetype-presets">
+                <span class="picker-label">Enemy Archetypes:</span>
+                <div class="preset-btn-row">
+                  <button id="btn-cpu-preset-light" class="archetype-chip cpu-chip">⚡ Swift Demon</button>
+                  <button id="btn-cpu-preset-tank" class="archetype-chip cpu-chip">🛡️ Brick Wall</button>
+                  <button id="btn-cpu-preset-bouncer" class="archetype-chip cpu-chip">🦘 High Bouncer</button>
+                  <button id="btn-cpu-preset-balanced" class="archetype-chip cpu-chip">⚖️ Balanced</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Enemy 1 to 10 Attribute Pickers -->
+            <div class="attributes-section cpu-attrs-section">
+              <div class="attr-header">
+                <h3 class="cpu-header-title">👹 Enemy Base Attributes (1 to 10):</h3>
+              </div>
+              
+              <div class="attr-grid">
+                <!-- CPU Weight (1 to 10) -->
+                <div class="attr-item cpu-attr-item">
+                  <div class="attr-top">
+                    <label for="input-cpu-weight">⚖️ Weight</label>
+                    <span id="label-cpu-weight" class="attr-badge cpu-badge-num">6</span>
+                  </div>
+                  <input type="range" id="input-cpu-weight" min="1" max="10" value="6" class="attr-slider cpu-slider" />
+                  <span class="attr-sub">Heavy = slow sprint but brick-wall defense</span>
+                </div>
+
+                <!-- CPU Strength (1 to 10) -->
+                <div class="attr-item cpu-attr-item">
+                  <div class="attr-top">
+                    <label for="input-cpu-strength">💪 Strength</label>
+                    <span id="label-cpu-strength" class="attr-badge cpu-badge-num">7</span>
+                  </div>
+                  <input type="range" id="input-cpu-strength" min="1" max="10" value="7" class="attr-slider cpu-slider" />
+                  <span class="attr-sub">Strong = hard headers & collision body push</span>
+                </div>
+
+                <!-- CPU Swiftness (1 to 10) -->
+                <div class="attr-item cpu-attr-item">
+                  <div class="attr-top">
+                    <label for="input-cpu-swiftness">⚡ Swiftness</label>
+                    <span id="label-cpu-swiftness" class="attr-badge cpu-badge-num">6</span>
+                  </div>
+                  <input type="range" id="input-cpu-swiftness" min="1" max="10" value="6" class="attr-slider cpu-slider" />
+                  <span class="attr-sub">Low = pops ball higher! Swift = low driven headers</span>
+                </div>
+
+                <!-- CPU Bounciness (1 to 10) -->
+                <div class="attr-item cpu-attr-item">
+                  <div class="attr-top">
+                    <label for="input-cpu-bounciness">🦘 Bounciness</label>
+                    <span id="label-cpu-bounciness" class="attr-badge cpu-badge-num">5</span>
+                  </div>
+                  <input type="range" id="input-cpu-bounciness" min="1" max="10" value="5" class="attr-slider cpu-slider" />
+                  <span class="attr-sub">High = spring trampoline headers & air jumps</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic Calculated In-Game Stats for CPU -->
+            <div class="calculated-stats-box cpu-calc-box">
+              <div class="calc-header">
+                <h4>📊 Enemy Calculated Stats:</h4>
+              </div>
+              <div class="stats-bars">
+                <div class="stat-row">
+                  <span class="stat-name">Speed</span>
+                  <div class="stat-track">
+                    <div id="bar-cpu-speed" class="stat-fill speed" style="width: 65%;"></div>
+                  </div>
+                  <span id="val-cpu-speed" class="stat-val">6.5</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-name">Defending</span>
+                  <div class="stat-track">
+                    <div id="bar-cpu-def" class="stat-fill defense" style="width: 65%;"></div>
+                  </div>
+                  <span id="val-cpu-def" class="stat-val">65</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-name">Jump</span>
+                  <div class="stat-track">
+                    <div id="bar-cpu-jump" class="stat-fill jump" style="width: 75%;"></div>
+                  </div>
+                  <span id="val-cpu-jump" class="stat-val">12.0</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-name">Ball Bounce</span>
+                  <div class="stat-track">
+                    <div id="bar-cpu-bounce" class="stat-fill bounce" style="width: 55%;"></div>
+                  </div>
+                  <span id="val-cpu-bounce" class="stat-val">Moderate</span>
+                </div>
+              </div>
+            </div>
+            
+            <p class="stat-explanation" id="stat-cpu-explanation">
+              <!-- Dynamically generated explanation for Enemy based on formula -->
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="game-footer">
+      <p>Emoji Head Soccer 1v1 • Running on Localhost:8089 • Pure HTML5 Canvas, CSS & JS</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
